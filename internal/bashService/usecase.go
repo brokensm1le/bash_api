@@ -5,4 +5,5 @@ type Usecase interface {
 	GetList(params *GetListParams) ([]Command, error)
 	CreateCommand(params *CreateCommandParams) (int64, error)
 	DeleteCommand(commandId int64, role int, userId int64) error
+	RunCommand(commandId int64, userId int64) (int64, error)
 }

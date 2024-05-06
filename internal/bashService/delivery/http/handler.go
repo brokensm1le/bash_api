@@ -32,7 +32,7 @@ func (h *BashServiceHandler) GetCommand() fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "re-login"})
 		}
 
-		idStr := c.Query("id")
+		idStr := c.Params("id")
 		if idStr == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "no id"})
 		}
@@ -149,5 +149,33 @@ func (h *BashServiceHandler) DeleteCommand() fiber.Handler {
 		}
 		c.Status(fiber.StatusOK)
 		return nil
+	}
+}
+
+func (h *BashServiceHandler) RunCommand() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		tokenData := c.Locals("tokenData")
+		if tokenData == nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "re-login"})
+		}
+		data, ok := tokenData.(*tokenManager.Data)
+		if !ok {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "re-login"})
+		}
+
+		idStr := c.Params("id")
+		if idStr == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "no id"})
+		}
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "bad id"})
+		}
+
+		runId, err := h.bashUC.RunCommand(id, data.Id)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"run_id": runId})
 	}
 }

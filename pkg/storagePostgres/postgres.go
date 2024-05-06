@@ -30,8 +30,9 @@ func CreateTable(db *sqlx.DB) error {
 		CREATE TABLE IF NOT EXISTS "results"
 		(
 		    run_id			bigserial    not null unique,
-			cmd_id       	bigserial    not null,
-			results			text		 not null,
+			cmd_id       	bigint    	 not null,
+			author_id		bigint       not null,
+			results			text		 ,
 			created_at      timestamp	 not null
 		);
 		CREATE TABLE IF NOT EXISTS "auth"

@@ -10,4 +10,5 @@ func MapRoutes(router fiber.Router, h *BashServiceHandler) {
 	routerWithToken.Get("/get_script/:id", h.GetCommand())
 	routerWithToken.Delete("/delete/:id", h.DeleteCommand())
 	routerWithToken.Get("/list", h.GetList())
+	routerWithToken.Post("/run/:id", h.RunCommand())
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"log"
 	"time"
 )
 
@@ -24,7 +25,7 @@ func (p *postgresRepository) GetCommand(cmdId int64) (*bashService.Command, erro
 		query = `
 		SELECT *
 		FROM %[1]s 
-		WHERE cmdId = $1;
+		WHERE cmd_id = $1;
 		`
 
 		values = []any{cmdId}
@@ -89,11 +90,12 @@ func (p *postgresRepository) DeleteCommand(id int64, userId int64) error {
 	var (
 		query = `
 		DELETE FROM %[1]s 
-		WHERE cmd_id = $1 && authorId = $2
+		WHERE cmd_id = $1 AND author_id = $2;
 		`
 
 		values = []any{id, userId}
 	)
+	log.Println(id, userId)
 
 	query = fmt.Sprintf(query, cconstant.CommandsDB)
 
