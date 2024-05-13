@@ -7,7 +7,7 @@ type Usecase interface {
 	DeleteCommand(commandId int64, role int, personID int64) error
 	RunCommand(commandId int64, personID int64) (int64, error)
 
-	KillRun(personId int64, runId int64) error
+	KillRun(personId int64, role int, runId int64) error
 	GetPersonResult(params *GetListParams) ([]Result, error)
 	GetRunResult(runId int64) (*Result, error)
 }

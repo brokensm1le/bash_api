@@ -11,4 +11,5 @@ type Repository interface {
 	ChangeRunStatus(params *ChngRunStatusParams) error
 	GetRun(runId int64) (*Result, error)
 	GetPersonRun(params *GetListParams) ([]Result, error)
+	GetAuthorIdByRunId(runId int64) (int64, error)
 }

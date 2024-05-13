@@ -111,9 +111,8 @@ func (p *postgresRepository) GetByRefreshToken(refreshToken string) (*auth.User,
 func (p *postgresRepository) BeAdmin(id int64) error {
 	var (
 		query string = `
-		UPDATE %[1]s SET (role) =
-			($1)
-		WHERE id = $3;
+		UPDATE %[1]s SET role = $1
+		WHERE id = $2;
 		`
 		values []any = []any{cconstant.RoleAdmin, id}
 	)

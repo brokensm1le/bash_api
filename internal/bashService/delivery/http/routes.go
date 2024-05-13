@@ -13,6 +13,6 @@ func MapRoutes(router fiber.Router, h *BashServiceHandler) {
 
 	routerWithToken.Post("/run/:cmd_id", h.RunCommand())
 	routerWithToken.Get("/get_run/:run_id", h.GetRun())
-	routerWithToken.Get("/run_list/:user_id", h.GetPersonResults())
+	routerWithToken.Get("/run_list", h.GetPersonResults())
 	routerWithToken.Get("/kill/:run_id", h.KillRun())
 }

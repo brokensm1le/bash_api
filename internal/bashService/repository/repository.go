@@ -217,3 +217,24 @@ func (p *postgresRepository) GetPersonRun(params *bashService.GetListParams) ([]
 
 	return data, nil
 }
+
+func (p *postgresRepository) GetAuthorIdByRunId(runId int64) (int64, error) {
+	var (
+		authorId int64
+		query    = `
+		SELECT author_id
+		FROM %[1]s 
+		WHERE run_id = $1;
+		`
+
+		values = []any{runId}
+	)
+
+	query = fmt.Sprintf(query, cconstant.ResultDB)
+
+	if err := p.db.Get(&authorId, query, values...); err != nil {
+		return 0, err
+	}
+
+	return authorId, nil
+}

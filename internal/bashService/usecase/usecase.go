@@ -123,8 +123,16 @@ func (u *BashServiceUsecase) GetPersonResult(params *bashService.GetListParams) 
 	return u.repo.GetPersonRun(params)
 }
 
-func (u *BashServiceUsecase) KillRun(personID int64, runId int64) error {
-	// check_person
+func (u *BashServiceUsecase) KillRun(personId int64, role int, runId int64) error {
+	if role != cconstant.RoleAdmin {
+		creatorId, err := u.repo.GetAuthorIdByRunId(runId)
+		if err != nil {
+			return err
+		}
+		if creatorId != personId {
+			return fmt.Errorf("you aren't admin and creator")
+		}
+	}
 	value, ok := u.cancelMap.Load(runId)
 	if !ok {
 		return fmt.Errorf("process not found! =(")

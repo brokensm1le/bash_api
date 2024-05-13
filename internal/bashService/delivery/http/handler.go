@@ -3,7 +3,9 @@ package http
 import (
 	"bash_api/internal/bashService"
 	"bash_api/pkg/tokenManager"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"log"
 	"strconv"
 )
 
@@ -70,9 +72,9 @@ func (h *BashServiceHandler) GetCommand() fiber.Handler {
 // @Accept       json
 // @Produce      json
 // @Param 		 Authorization 	header 	string	true  "Authorization"
-// @Param 		 Limit		header 	int	true  "Limit"
-// @Param 		 Offset		header 	int	true  "Offset"
-// @Param 		 AuthorId	header 	int	true  "Author Id"
+// @Param 		 Limit		header 	int	false  "Limit"
+// @Param 		 Offset		header 	int	false  "Offset"
+// @Param 		 AuthorId	header 	int	false  "Author Id"
 // @Success      200  {array}	bashService.Command
 // @Failure      400  {object}	error
 // @Failure      401  {object}	error
@@ -274,7 +276,7 @@ func (h *BashServiceHandler) KillRun() fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "bad id"})
 		}
 
-		err = h.bashUC.KillRun(runId, data.Id)
+		err = h.bashUC.KillRun(data.Id, data.Role, runId)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -334,35 +336,48 @@ func (h *BashServiceHandler) GetRun() fiber.Handler {
 // @Accept       json
 // @Produce      json
 // @Param 		 Authorization 	header 	string	true  "Authorization"
-// @Param        user_id			path 	int		true  "user id"
+// @Param 		 Limit		header 	int	false  "Limit"
+// @Param 		 Offset		header 	int	false  "Offset"
+// @Param 		 AuthorId	header 	int	false  "Author Id"
 // @Success      200  {array}	bashService.Result
 // @Failure      400  {object}	error
 // @Failure      401  {object}	error
 // @Failure      500  {object}  error
-// @Router       /run_list/{user_id} [get]
+// @Router       /run_list [get]
 func (h *BashServiceHandler) GetPersonResults() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		tokenData := c.Locals("tokenData")
 		if tokenData == nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "re-login"})
 		}
-		_, ok := tokenData.(*tokenManager.Data)
+		data, ok := tokenData.(*tokenManager.Data)
 		if !ok {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "re-login"})
 		}
 
-		limitStr := c.GetRespHeader("Limit", "5")
-		limit, err := strconv.ParseInt(limitStr, 10, 64)
+		headers := c.GetReqHeaders()
+		limitStr, ok := headers["Limit"]
+		if !ok {
+			limitStr = []string{"5"}
+		}
+		limit, err := strconv.ParseInt(limitStr[0], 10, 64)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "bad limit"})
 		}
-		offsetStr := c.GetRespHeader("Offset", "0")
-		offset, err := strconv.ParseInt(offsetStr, 10, 64)
+		offsetStr, ok := headers["Offset"]
+		if !ok {
+			offsetStr = []string{"0"}
+		}
+		offset, err := strconv.ParseInt(offsetStr[0], 10, 64)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "bad offset"})
 		}
-		authorStr := c.GetRespHeader("AuthorId", "-1")
-		authorId, err := strconv.ParseInt(authorStr, 10, 64)
+		authorStr, ok := headers["Author-Id"]
+		log.Println(authorStr, ok)
+		if !ok {
+			authorStr = []string{fmt.Sprintf("%d", data.Id)}
+		}
+		authorId, err := strconv.ParseInt(authorStr[0], 10, 64)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "bad author id"})
 		}

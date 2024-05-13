@@ -334,17 +334,14 @@ paths:
       - description: Limit
         in: header
         name: Limit
-        required: true
         type: integer
       - description: Offset
         in: header
         name: Offset
-        required: true
         type: integer
       - description: Author Id
         in: header
         name: AuthorId
-        required: true
         type: integer
       produces:
       - application/json
@@ -435,7 +432,7 @@ paths:
       summary: KillRun
       tags:
       - run
-  /run_list/{user_id}:
+  /run_list:
     get:
       consumes:
       - application/json
@@ -446,10 +443,17 @@ paths:
         name: Authorization
         required: true
         type: string
-      - description: user id
-        in: path
-        name: user_id
-        required: true
+      - description: Limit
+        in: header
+        name: Limit
+        type: integer
+      - description: Offset
+        in: header
+        name: Offset
+        type: integer
+      - description: Author Id
+        in: header
+        name: AuthorId
         type: integer
       produces:
       - application/json

@@ -410,22 +410,19 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Limit",
                         "name": "Limit",
-                        "in": "header",
-                        "required": true
+                        "in": "header"
                     },
                     {
                         "type": "integer",
                         "description": "Offset",
                         "name": "Offset",
-                        "in": "header",
-                        "required": true
+                        "in": "header"
                     },
                     {
                         "type": "integer",
                         "description": "Author Id",
                         "name": "AuthorId",
-                        "in": "header",
-                        "required": true
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -552,7 +549,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/run_list/{user_id}": {
+        "/run_list": {
             "get": {
                 "description": "Get list run results of a certain user (if you are admin or creator)",
                 "consumes": [
@@ -575,10 +572,21 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "user id",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
+                        "description": "Limit",
+                        "name": "Limit",
+                        "in": "header"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "Offset",
+                        "in": "header"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Author Id",
+                        "name": "AuthorId",
+                        "in": "header"
                     }
                 ],
                 "responses": {
