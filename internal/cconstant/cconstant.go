@@ -20,3 +20,9 @@ const (
 	RoleUser  int = 0
 	RoleAdmin int = 1
 )
+
+const (
+	RunningStatus = iota
+	FailedStatus
+	SuccessStatus
+)

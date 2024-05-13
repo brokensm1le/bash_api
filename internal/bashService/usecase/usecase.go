@@ -3,20 +3,23 @@ package usecase
 import (
 	"bash_api/internal/bashService"
 	"bash_api/internal/cconstant"
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"time"
+	"sync"
 )
 
 type BashServiceUsecase struct {
-	repo bashService.Repository
+	repo      bashService.Repository
+	cancelMap sync.Map
 }
 
 func NewBashServiceUsecase(repo bashService.Repository) bashService.Usecase {
 	return &BashServiceUsecase{
-		repo: repo,
+		repo:      repo,
+		cancelMap: sync.Map{},
 	}
 }
 
@@ -32,49 +35,102 @@ func (u *BashServiceUsecase) CreateCommand(params *bashService.CreateCommandPara
 	return u.repo.CreateCommand(params)
 }
 
-func (u *BashServiceUsecase) DeleteCommand(commandId int64, role int, userId int64) error {
+func (u *BashServiceUsecase) DeleteCommand(commandId int64, role int, personID int64) error {
 	if role == cconstant.RoleAdmin {
 		return u.repo.DeleteCommandAdmin(commandId)
 	} else {
-		return u.repo.DeleteCommand(commandId, userId)
+		return u.repo.DeleteCommand(commandId, personID)
 	}
 }
 
-func (u *BashServiceUsecase) RunCommand(commandId int64, userId int64) (int64, error) {
+func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64, error) {
 	command, err := u.repo.GetCommand(commandId)
 	if err != nil {
 		return 0, err
 	}
 
-	//u.repo.CreateRun()
-	nameFile := fmt.Sprintf("%d_%d.sh", command.CmdId, time.Now().Unix())
-
-	f, err := os.Create(nameFile)
+	runId, err := u.repo.CreateRun(&bashService.CreateRunParams{CmdId: commandId, AuthorId: personID})
 	if err != nil {
-		log.Println(err)
+		return 0, err
 	}
-	f.WriteString(command.Cmd)
-	f.Close()
 
-	stdout, err := exec.Command("chmod", "+x", nameFile).Output()
-	log.Println(string(stdout))
-	stdout, err = exec.Command("cat", nameFile).Output()
-	log.Println(string(stdout))
-	stdout, err = exec.Command("ls", "-la").Output()
-	log.Println(string(stdout))
+	ctx, cancel := context.WithCancel(context.Background())
+	u.cancelMap.Store(runId, cancel)
 
-	command.CmdArgs = append([]string{"./" + nameFile}, command.CmdArgs...)
+	go func() {
+		nameFile := fmt.Sprintf("%d.sh", runId)
 
-	log.Println(command.CmdArgs)
+		f, err := os.Create(nameFile)
+		if err != nil {
+			log.Println("Error create file:", err)
+			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
+			if err != nil {
+				log.Println("Error in run command -> ChangeRunStatus:", err)
+			}
+			return
+		}
+		_, err = f.WriteString(command.Cmd)
+		if err != nil {
+			log.Println("Error write file:", err)
+			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
+			if err != nil {
+				log.Println("Error in run command -> ChangeRunStatus:", err)
+			}
+			return
+		}
+		f.Close()
 
-	stdout, err = exec.Command("/bin/sh", command.CmdArgs...).Output()
-	log.Println(string(stdout))
+		_, err = exec.Command("chmod", "+x", nameFile).Output()
+		if err != nil {
+			log.Println("Error in chmod file:", err)
+			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
+			if err != nil {
+				log.Println("Error in run command -> ChangeRunStatus:", err)
+			}
+			return
+		}
 
-	return 0, nil
+		command.CmdArgs = append([]string{"./" + nameFile}, command.CmdArgs...)
+
+		stdout, err := exec.CommandContext(ctx, "/bin/sh", command.CmdArgs...).Output()
+		if err != nil {
+			log.Println("Error in run command:", err)
+			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
+			if err != nil {
+				log.Println("Error in run command -> ChangeRunStatus:", err)
+			}
+			return
+		}
+
+		err = os.Remove(nameFile)
+		if err != nil {
+			log.Println("Error in delete file:", err)
+		}
+		err = u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.SuccessStatus, Result: string(stdout)})
+		if err != nil {
+			log.Println("Error in ChangeRunStatus:", err)
+		}
+	}()
+
+	return runId, nil
 }
 
-func (u *BashServiceUsecase) GetRunResult(runId int64) {
+func (u *BashServiceUsecase) GetRunResult(runId int64) (*bashService.Result, error) {
+	return u.repo.GetRun(runId)
 }
 
-func (u *BashServiceUsecase) GetPersonResult() {
+func (u *BashServiceUsecase) GetPersonResult(params *bashService.GetListParams) ([]bashService.Result, error) {
+	return u.repo.GetPersonRun(params)
+}
+
+func (u *BashServiceUsecase) KillRun(personID int64, runId int64) error {
+	// check_person
+	value, ok := u.cancelMap.Load(runId)
+	if !ok {
+		return fmt.Errorf("process not found! =(")
+	}
+	cancelF := value.(context.CancelFunc)
+	cancelF()
+	u.cancelMap.Delete(runId)
+	return nil
 }

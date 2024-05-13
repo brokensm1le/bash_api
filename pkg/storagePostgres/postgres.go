@@ -32,6 +32,7 @@ func CreateTable(db *sqlx.DB) error {
 		    run_id			bigserial    not null unique,
 			cmd_id       	bigint    	 not null,
 			author_id		bigint       not null,
+			status_id		int			 not null default 0,
 			results			text		 ,
 			created_at      timestamp	 not null
 		);

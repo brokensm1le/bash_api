@@ -134,3 +134,86 @@ func (p *postgresRepository) DeleteCommandAdmin(id int64) error {
 
 	return nil
 }
+
+func (p *postgresRepository) CreateRun(params *bashService.CreateRunParams) (int64, error) {
+	var (
+		query = `INSERT INTO %[1]s (cmd_id, author_id, created_at)
+		VALUES ($1, $2, $3)
+		RETURNING run_id;`
+
+		timeNow time.Time = customTime.GetMoscowTime()
+		values            = []any{params.CmdId, params.AuthorId, timeNow}
+		id      int64
+	)
+
+	query = fmt.Sprintf(query, cconstant.ResultDB)
+
+	if err := p.db.Get(&id, query, values...); err != nil {
+		return id, err
+	}
+
+	return id, nil
+}
+
+func (p *postgresRepository) ChangeRunStatus(params *bashService.ChngRunStatusParams) error {
+	var (
+		query = `UPDATE %[1]s SET (status_id, results) = ($1, $2)
+		WHERE run_id = $3;`
+
+		values = []any{params.StatusId, params.Result, params.RunId}
+	)
+
+	query = fmt.Sprintf(query, cconstant.ResultDB)
+
+	if _, err := p.db.Exec(query, values...); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *postgresRepository) GetRun(runId int64) (*bashService.Result, error) {
+	var (
+		data  bashService.Result
+		query = `
+		SELECT *
+		FROM %[1]s 
+		WHERE run_id = $1;
+		`
+
+		values = []any{runId}
+	)
+
+	query = fmt.Sprintf(query, cconstant.ResultDB)
+
+	if err := p.db.Get(&data, query, values...); err != nil {
+		return &data, err
+	}
+
+	return &data, nil
+}
+
+func (p *postgresRepository) GetPersonRun(params *bashService.GetListParams) ([]bashService.Result, error) {
+	var (
+		data  []bashService.Result
+		query = `
+		SELECT *
+		FROM %[1]s 
+		WHERE author_id = $1
+		LIMIT $2 
+		OFFSET $3;
+		`
+
+		values = []any{params.AuthorId, params.Limit, params.Offset}
+	)
+
+	log.Println(values)
+
+	query = fmt.Sprintf(query, cconstant.ResultDB)
+
+	if err := p.db.Select(&data, query, values...); err != nil {
+		return data, err
+	}
+
+	return data, nil
+}

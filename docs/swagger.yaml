@@ -1,0 +1,475 @@
+basePath: /api/v1
+definitions:
+  bash_api_internal_auth.SignInParams:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  bash_api_internal_auth.TokensResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  bash_api_internal_auth.User:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  bash_api_internal_bashService.Command:
+    properties:
+      author_id:
+        type: integer
+      cmd:
+        type: string
+      cmd_args:
+        items:
+          type: string
+        type: array
+      cmd_id:
+        type: integer
+      created_at:
+        type: string
+    type: object
+  bash_api_internal_bashService.CreateCommandParams:
+    properties:
+      cmd:
+        type: string
+      cmd_args:
+        items:
+          type: string
+        type: array
+    type: object
+  bash_api_internal_bashService.Result:
+    properties:
+      author_id:
+        type: integer
+      cmd_id:
+        type: integer
+      created_at:
+        type: string
+      results:
+        type: string
+      run_id:
+        type: integer
+      status_id:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample bash server.
+  title: Bash App API
+  version: "1.0"
+paths:
+  /auth/beAdmin/{id}:
+    post:
+      consumes:
+      - application/json
+      description: You're gonna be an admin
+      parameters:
+      - description: Secret-Key
+        in: header
+        name: Secret-Key
+        required: true
+        type: string
+      - description: login and password
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/bash_api_internal_auth.SignInParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: BeAdmin
+      tags:
+      - Auth
+  /auth/refreshTokens:
+    post:
+      consumes:
+      - application/json
+      description: Refresh tokens
+      parameters:
+      - description: Refresh-Token
+        in: header
+        name: Refresh-Token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bash_api_internal_auth.TokensResponse'
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: RefreshTokens
+      tags:
+      - Auth
+  /auth/signIn:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: login and password
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/bash_api_internal_auth.SignInParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bash_api_internal_auth.TokensResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: SignIn
+      tags:
+      - Auth
+  /auth/signUp:
+    post:
+      consumes:
+      - application/json
+      description: Create account
+      parameters:
+      - description: user data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/bash_api_internal_auth.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: SignUp
+      tags:
+      - Auth
+  /create_cmd:
+    post:
+      consumes:
+      - application/json
+      description: Add bash command
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: command data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/bash_api_internal_bashService.CreateCommandParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: command id
+          schema:
+            type: int
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: CreateCommand
+      tags:
+      - command
+  /delete/{cmd_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete bash command
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: command id
+        in: path
+        name: cmd_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: DeleteCommand
+      tags:
+      - command
+  /get_cmd/{cmd_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get bash command
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: command id
+        in: path
+        name: cmd_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bash_api_internal_bashService.Command'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: GetCommand
+      tags:
+      - command
+  /get_run/{run_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get run results
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: run id
+        in: path
+        name: run_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bash_api_internal_bashService.Result'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: GetRun
+      tags:
+      - run
+  /list:
+    get:
+      consumes:
+      - application/json
+      description: Get list bash commands
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Limit
+        in: header
+        name: Limit
+        required: true
+        type: integer
+      - description: Offset
+        in: header
+        name: Offset
+        required: true
+        type: integer
+      - description: Author Id
+        in: header
+        name: AuthorId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/bash_api_internal_bashService.Command'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: GetList
+      tags:
+      - command
+  /run/{cmd_id}:
+    post:
+      consumes:
+      - application/json
+      description: Run bash command
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: command id
+        in: path
+        name: cmd_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: run id
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: RunCommand
+      tags:
+      - run
+  /run/{run_id}:
+    get:
+      consumes:
+      - application/json
+      description: Kill run proccess
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: run id
+        in: path
+        name: run_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: KillRun
+      tags:
+      - run
+  /run_list/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get list run results of a certain user (if you are admin or creator)
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: user id
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/bash_api_internal_bashService.Result'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: GetPersonResults
+      tags:
+      - command
+swagger: "2.0"
