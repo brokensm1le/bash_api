@@ -383,7 +383,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "201":
           description: run id
           schema:
             type: integer

@@ -211,7 +211,7 @@ func (h *BashServiceHandler) DeleteCommand() fiber.Handler {
 // @Produce      json
 // @Param 		 Authorization 	header 	string	true  "Authorization"
 // @Param        cmd_id			path 	int		true  "command id"
-// @Success      200  {object}	int		"run id"
+// @Success      201  {object}	int		"run id"
 // @Failure      400  {object}	error
 // @Failure      401  {object}	error
 // @Failure      500  {object}  error

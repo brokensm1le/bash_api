@@ -480,7 +480,7 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "run id",
                         "schema": {
                             "type": "integer"

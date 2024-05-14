@@ -63,6 +63,7 @@ func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64,
 		f, err := os.Create(nameFile)
 		if err != nil {
 			log.Println("Error create file:", err)
+			u.cancelMap.Delete(runId)
 			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
 			if err != nil {
 				log.Println("Error in run command -> ChangeRunStatus:", err)
@@ -76,6 +77,11 @@ func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64,
 			if err != nil {
 				log.Println("Error in run command -> ChangeRunStatus:", err)
 			}
+			err = os.Remove(nameFile)
+			if err != nil {
+				log.Println("Error in delete file:", err)
+			}
+			u.cancelMap.Delete(runId)
 			return
 		}
 		f.Close()
@@ -87,18 +93,28 @@ func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64,
 			if err != nil {
 				log.Println("Error in run command -> ChangeRunStatus:", err)
 			}
+			err = os.Remove(nameFile)
+			if err != nil {
+				log.Println("Error in delete file:", err)
+			}
+			u.cancelMap.Delete(runId)
 			return
 		}
 
 		command.CmdArgs = append([]string{"./" + nameFile}, command.CmdArgs...)
 
-		stdout, err := exec.CommandContext(ctx, "/bin/sh", command.CmdArgs...).Output()
+		stdout, err := exec.CommandContext(ctx, "/bin/bash", command.CmdArgs...).Output()
 		if err != nil {
 			log.Println("Error in run command:", err)
 			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
 			if err != nil {
 				log.Println("Error in run command -> ChangeRunStatus:", err)
 			}
+			err = os.Remove(nameFile)
+			if err != nil {
+				log.Println("Error in delete file:", err)
+			}
+			u.cancelMap.Delete(runId)
 			return
 		}
 
@@ -106,6 +122,7 @@ func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64,
 		if err != nil {
 			log.Println("Error in delete file:", err)
 		}
+		u.cancelMap.Delete(runId)
 		err = u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.SuccessStatus, Result: string(stdout)})
 		if err != nil {
 			log.Println("Error in ChangeRunStatus:", err)
