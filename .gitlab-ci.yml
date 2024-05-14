@@ -1,0 +1,15 @@
+image: golang:alpine
+
+stages:
+  - build
+  - test
+
+go_build:
+  stage: build
+  script:
+    - docker-compose build
+
+test-job:
+  stage: test
+  script:
+    - make test
