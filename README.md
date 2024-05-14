@@ -1,5 +1,8 @@
 # bash_api
 
+## Задание
+Условие задание можно посмотреть [тут](task.md).
+
 ## Решение
 
 ### API
@@ -39,10 +42,7 @@ psql postgresql://root:root@localhost:5432/taskdb
 - Для общения использовал web framework - [Fiber](https://github.com/gofiber/fiber).
 - Для SQL запросов использовал библиотеку [SQLX](https://github.com/jmoiron/sqlx).
 - Для Api использовал библиотеку [Swagger](https://github.com/swaggo/swag).
-- Для авторизации использовал [JWT-token](https://github.com/dgrijalva/jwt-go) (access) и просто генерировал рандомную строку(refresh).
-  В JWT-token внутрь зашил роль клиента и его ID, так что при изменении роли нужно будет перелогиниваться(получить новый access).
-  Чтобы изменить роль с обычного user на admin необходимо вызвать ручку /auth/beAdmin. Обработка access token-a находится в Middleware.
-
+- Для авторизации и регистрации использовал [JWT-token](https://github.com/dgrijalva/jwt-go).
 ### Звездочки
 
 - Добавить в API метод для остановки команды. [Done ✅](./docs/adr/adr1.md)
@@ -65,6 +65,13 @@ psql postgresql://root:root@localhost:5432/taskdb
 [Подробнее.](./test/test_test.go)
 
 ### Новый функционал
+
+Добавил регистрацию и авторизацию пользователей, для AccessToken-a использовал [JWT-token](https://github.com/dgrijalva/jwt-go),
+а для RefreshToken-a генерировал рандомную строку. В JWT-token внутрь зашил роль клиента и его ID, так что 
+при изменении роли нужно будет перелогиниваться(получить новый access). Чтобы изменить роль с обычного user 
+на admin необходимо вызвать ручку ```/auth/beAdmin```. Обработка access token-a находится в Middleware.
+
+Сами ручки добавлены в [API](docs/swagger.yaml) с тэгом ```auth```.
 
 _________________________________________________
 
