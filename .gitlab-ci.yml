@@ -1,4 +1,5 @@
-image: golang:alpine
+image:
+  name: docker/compose:latest
 
 stages:
   - build
