@@ -64,7 +64,7 @@ func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64,
 		if err != nil {
 			log.Println("Error create file:", err)
 			u.cancelMap.Delete(runId)
-			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
+			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.CanceledStatus, Result: err.Error()})
 			if err != nil {
 				log.Println("Error in run command -> ChangeRunStatus:", err)
 			}
@@ -73,7 +73,7 @@ func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64,
 		_, err = f.WriteString(command.Cmd)
 		if err != nil {
 			log.Println("Error write file:", err)
-			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
+			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.CanceledStatus, Result: err.Error()})
 			if err != nil {
 				log.Println("Error in run command -> ChangeRunStatus:", err)
 			}
@@ -89,7 +89,7 @@ func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64,
 		_, err = exec.Command("chmod", "+x", nameFile).Output()
 		if err != nil {
 			log.Println("Error in chmod file:", err)
-			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
+			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.CanceledStatus, Result: err.Error()})
 			if err != nil {
 				log.Println("Error in run command -> ChangeRunStatus:", err)
 			}
@@ -106,7 +106,7 @@ func (u *BashServiceUsecase) RunCommand(commandId int64, personID int64) (int64,
 		stdout, err := exec.CommandContext(ctx, "/bin/bash", command.CmdArgs...).Output()
 		if err != nil {
 			log.Println("Error in run command:", err)
-			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.FailedStatus, Result: err.Error()})
+			err := u.repo.ChangeRunStatus(&bashService.ChngRunStatusParams{RunId: runId, StatusId: cconstant.CanceledStatus, Result: err.Error()})
 			if err != nil {
 				log.Println("Error in run command -> ChangeRunStatus:", err)
 			}

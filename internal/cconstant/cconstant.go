@@ -23,6 +23,6 @@ const (
 
 const (
 	RunningStatus = iota
-	FailedStatus
+	CanceledStatus
 	SuccessStatus
 )
