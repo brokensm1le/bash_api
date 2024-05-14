@@ -4,12 +4,12 @@ stages:
   - build
   - test
 
-go_build:
+build:
   stage: build
   script:
     - docker-compose build
 
-test-job:
+test:
   stage: test
   script:
     - make test
