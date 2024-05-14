@@ -26,7 +26,8 @@ psql postgresql://root:root@localhost:5432/taskdb
 
 ###### Дизайн системы
 
-![Design System](./docs/pic/design.jpg)
+[//]: # (![Design System]&#40;./docs/pic/design.jpg&#41;)
+[<img src="./docs/pic/design.jpg" width="700" />](./docs/pic/design.jpg)
 
 ###### Таблицы БД
 Приложение имеет DB, в которой 3 таблицы:
